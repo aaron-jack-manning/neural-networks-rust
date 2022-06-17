@@ -1,8 +1,11 @@
 use std::ops;
 use std::fmt;
 
+use std::vec::Vec as AlgVec;
+//use crate::unsafe_vec::UnsafeVec as AlgVec;
+
 #[derive(Clone)]
-pub (crate) struct Vector(pub Vec<f64>);
+pub (crate) struct Vector(pub (crate) AlgVec<f64>);
 
 impl fmt::Debug for Vector {
     fn fmt(&self, f : &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -14,7 +17,7 @@ impl fmt::Debug for Vector {
 pub struct Matrix {
     rows : usize,
     cols : usize,
-    values : Vec<f64>,
+    values : AlgVec<f64>,
 }
 
 impl fmt::Debug for Matrix {
@@ -40,7 +43,7 @@ impl fmt::Debug for Matrix {
 impl Vector {
    
     /// Creates a new vector from a Vec<f64>.
-    pub (crate) fn new(values : Vec<f64>) -> Vector {
+    pub (crate) fn new(values : AlgVec<f64>) -> Vector {
         Vector(values)
     }
 
@@ -51,6 +54,7 @@ impl Vector {
 
     /// Indexes the vector.
     fn index(&self, index : usize) -> f64 {
+        //self.0[index]
         self.0[index]
     }
 
@@ -75,12 +79,8 @@ impl Vector {
 
     fn component_wise<F>(first : &Vector, second : &Vector, mut operation : F) -> Vector
         where F : FnMut(f64, f64) -> f64 {
-        #[cfg(debug_assertions)]
-        {
-            if first.len() != second.len() {
-                panic!("Attempt to perform component wise operation on vectors of different lengths.");
-            }
-        }
+        debug_assert!(first.len() == second.len());
+
         Vector::new(
             first
             .0
@@ -92,7 +92,7 @@ impl Vector {
     } 
 
     pub (crate) fn outer_product(first : &Vector, second : &Vector) -> Matrix {
-        let mut values = Vec::with_capacity(first.len() * second.len());
+        let mut values = AlgVec::with_capacity(first.len() * second.len());
 
         for i in 0..first.len() {
             for j in 0..second.len() {
@@ -131,13 +131,8 @@ impl ops::Mul<&Vector> for f64 {
 }
 
 impl Matrix {
-    pub (crate) fn new(rows : usize, cols : usize, values : Vec<f64>) -> Matrix {
-        #[cfg(debug_assertions)]
-        {
-            if values.len() != rows * cols {
-                panic!("Attempt to create a matrix with incorrect dimensions.")
-            }
-        }
+    pub (crate) fn new(rows : usize, cols : usize, values : AlgVec<f64>) -> Matrix {
+        debug_assert!(values.len() == rows * cols);
 
         Matrix {
             rows,
@@ -147,25 +142,15 @@ impl Matrix {
     }
 
     pub (crate) fn index(&self, row : usize, col : usize) -> f64 {
-        #[cfg(debug_assertions)]
-        {
-            if row >= self.rows || col >= self.cols {
-                panic!("Attempt to index a matrix out of bounds.")
-            }
-        }
+        debug_assert!(row < self.rows && col < self.cols);
 
         self.values[row * self.cols + col]
     }
 
     pub (crate) fn multiply(first : &Matrix, second : &Matrix) -> Matrix {
-        #[cfg(debug_assertions)]
-        {
-            if first.cols != second.rows {
-                panic!("Attempt to multiply matrices with incompatible dimensions.")
-            } 
-        }
+        debug_assert!(first.cols == second.rows);
 
-        let mut unravelled = Vec::with_capacity(first.rows * second.cols);
+        let mut unravelled = AlgVec::with_capacity(first.rows * second.cols);
 
         for i in 0..first.rows {
             for j in 0..second.cols {
@@ -184,7 +169,7 @@ impl Matrix {
     }
 
     pub (crate) fn transpose(&self) -> Matrix {
-        let mut values = Vec::with_capacity(self.rows * self.cols);
+        let mut values = AlgVec::with_capacity(self.rows * self.cols);
 
         for row in 0..self.rows {
             for col in 0..self.cols {
@@ -196,7 +181,7 @@ impl Matrix {
     }
 
     pub (crate) fn diagonal(vector : &Vector) -> Matrix {
-        let mut values = Vec::with_capacity(vector.len() * vector.len());
+        let mut values = AlgVec::with_capacity(vector.len() * vector.len());
 
         for row in 0..vector.len() {
             for col in 0..vector.len() {
@@ -211,12 +196,7 @@ impl Matrix {
 
     fn component_wise<F>(first : &Matrix, second : &Matrix, mut operation : F) -> Matrix
         where F : FnMut(f64, f64) -> f64 {
-        #[cfg(debug_assertions)]
-        {
-            if first.rows != second.rows || first.cols != second.cols {
-                panic!("Attempt to perform component wise operation on matrices of inconsistent dimensions.");
-            }
-        }
+        debug_assert!(first.rows == second.rows && first.cols == second.cols);
 
         Matrix::new(
             first.rows,
@@ -231,12 +211,7 @@ impl Matrix {
     } 
 
     pub (crate) fn into_vector(self) -> Vector {
-        #[cfg(debug_assertions)]
-        {
-            if self.rows != 1 && self.cols != 1 {
-                panic!("Attempt to convert matrix which is not a single row or column into a vector.")
-            }
-        }
+        debug_assert!(self.rows == 1 || self.cols == 1);
 
         Vector::new(self.values)
     }

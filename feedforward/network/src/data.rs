@@ -3,6 +3,9 @@ use std::path;
 use crate::algebra::Vector;
 use crate::DataSet;
 
+use std::vec::Vec as AlgVec;
+//use crate::unsafe_vec::UnsafeVec as AlgVec;
+
 impl DataSet {
     /// Reads a data set from a CSV file, where each row is a set of inputs and each column
     /// corresponds with an input neuron.
@@ -18,7 +21,7 @@ impl DataSet {
         let mut length = 0;
 
         for result in reader.records() {
-            let mut row = Vec::new();
+            let mut row = AlgVec::new();
             let row_record = match result {
                 Ok(row_record) => row_record,
                 Err(error) => return Err(error.to_string())

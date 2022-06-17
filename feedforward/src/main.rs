@@ -1,3 +1,5 @@
+// TODO: Algebra module has new vector indexing functions, change all indexing over.
+
 use std::path;
 
 extern crate network;
@@ -15,10 +17,10 @@ fn max_index(vector : &[f64]) -> usize {
 fn main() {
     weights_gen::init();
     
-    let train_input = DataSet::from_csv(path::PathBuf::from("/home/user/numberstraininput.csv"), false).unwrap();
-    let train_expected = DataSet::from_csv(path::PathBuf::from("/home/user/numberstrainoutput.csv"), false).unwrap();
-    let test_input = DataSet::from_csv(path::PathBuf::from("/home/user/numberstestinput.csv"), false).unwrap();
-    let test_expected = DataSet::from_csv(path::PathBuf::from("/home/user/numberstestoutput.csv"), false).unwrap();
+    let train_input = DataSet::from_csv(path::PathBuf::from("../mnist-datasets/numberstraininput.csv"), false).unwrap();
+    let train_expected = DataSet::from_csv(path::PathBuf::from("../mnist-datasets/numberstrainoutput.csv"), false).unwrap();
+    let test_input = DataSet::from_csv(path::PathBuf::from("../mnist-datasets/numberstestinput.csv"), false).unwrap();
+    let test_expected = DataSet::from_csv(path::PathBuf::from("../mnist-datasets/numberstestoutput.csv"), false).unwrap();
     
     let mut network =
         Network::new(

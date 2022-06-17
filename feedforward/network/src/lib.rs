@@ -1,8 +1,10 @@
 mod algebra;
+mod unsafe_vec;
 pub mod data;
 pub mod weights_gen;
 pub mod activation;
 pub mod network;
+
 
 use crate::algebra::{Vector, Matrix};
 

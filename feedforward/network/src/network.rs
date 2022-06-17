@@ -1,7 +1,12 @@
 use std::collections::VecDeque;
 
 use crate::algebra::{Vector, Matrix};
+use std::vec;
+
 use crate::{DataSet, Network};
+
+use std::vec::Vec as AlgVec;
+//use crate::unsafe_vec::UnsafeVec as AlgVec;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -14,7 +19,7 @@ struct FeedForwardResult {
 impl Network {
     /// Creates a new feed forward neural network.
     pub fn new(
-        structure : Vec<usize>,
+        structure : vec::Vec<usize>,
         weights_init : fn(usize, usize) -> f64,
         biases_init : fn(usize) -> f64, 
         activ : fn(f64) -> f64,
@@ -22,9 +27,9 @@ impl Network {
             -> Network {
 
         // Initialising all the biases.
-        let mut biases = Vec::with_capacity(structure.len() - 1);
+        let mut biases = vec::Vec::with_capacity(structure.len() - 1);
         for layer_size in structure.iter().skip(1) {
-            let mut layer = Vec::with_capacity(*layer_size);
+            let mut layer = AlgVec::with_capacity(*layer_size);
             for _neuron_no in 0..*layer_size {
                 layer.push((biases_init)(*layer_size));
             }
@@ -32,9 +37,9 @@ impl Network {
         }
 
         // Initialising all the weights.
-        let mut weights : Vec<Matrix> = Vec::with_capacity(structure.len() - 1);
+        let mut weights : vec::Vec<Matrix> = vec::Vec::with_capacity(structure.len() - 1);
         for layer_no in 0..(structure.len() - 1) {
-            let mut weights_set = Vec::with_capacity(structure[layer_no + 1] * structure[layer_no]);
+            let mut weights_set = AlgVec::with_capacity(structure[layer_no + 1] * structure[layer_no]);
             for _weight_no in 0..(structure[layer_no + 1] * structure[layer_no]) {
                 weights_set.push((weights_init)(structure[layer_no], structure[layer_no + 1]));
             }
@@ -65,8 +70,8 @@ impl Network {
     }
 
     /// Output is in the form of (input, each layer result)
-    fn feed_forward(&self, input : &Vector) -> (Vector, Vec<FeedForwardResult>) {
-        let mut result : Vec<FeedForwardResult> = Vec::with_capacity(self.num_layers());
+    fn feed_forward(&self, input : &Vector) -> (Vector, vec::Vec<FeedForwardResult>) {
+        let mut result : vec::Vec<FeedForwardResult> = vec::Vec::with_capacity(self.num_layers());
 
         for output_layer_no in 1..self.num_layers() {
 
@@ -88,7 +93,7 @@ impl Network {
 
     /// Feeds forward the provided data set.
     pub fn test(&self, input : &DataSet) -> DataSet {
-        let mut result = Vec::with_capacity(input.quantity());
+        let mut result = vec::Vec::with_capacity(input.quantity());
 
         for i in 0..input.quantity() {
             result.push(
@@ -100,7 +105,7 @@ impl Network {
     }
     
     /// Calculates the cost for the network for a given input.
-    pub fn cost(&self, output : &DataSet, expected : &DataSet) -> Vec<f64> {
+    pub fn cost(&self, output : &DataSet, expected : &DataSet) -> vec::Vec<f64> {
 
         if output.quantity() != expected.quantity() {
             panic!("Attempt to calculate cost for a neural network with a different number of output data sets as expected output data sets.")
@@ -159,7 +164,7 @@ impl Network {
     /// Calculates the derivative of the network cost with respect to the input of the activation
     /// function for each layer. The resulting VecDeque is indexed from 0 starting at the second
     /// layer in the network. This should be called with an initial value of 1.
-    fn activation_input_diff(&self, feed_forward_results : &(Vector, Vec<FeedForwardResult>), expected : &Vector, layer_no : usize) -> VecDeque<Matrix> {
+    fn activation_input_diff(&self, feed_forward_results : &(Vector, vec::Vec<FeedForwardResult>), expected : &Vector, layer_no : usize) -> VecDeque<Matrix> {
 
         // Last layer in the network.
         if layer_no == self.num_layers() - 1 {
@@ -196,8 +201,8 @@ impl Network {
 
     /// Calculates the derivative of the weights with respect to the input to the activation
     /// function of the following layer.
-    fn weight_diff(&self, activation_input_diff : &VecDeque<Matrix>, feed_forward_results : &(Vector, Vec<FeedForwardResult>)) -> Vec<Matrix> {
-        let mut diffs = Vec::with_capacity(self.num_layers() - 1);
+    fn weight_diff(&self, activation_input_diff : &VecDeque<Matrix>, feed_forward_results : &(Vector, Vec<FeedForwardResult>)) -> vec::Vec<Matrix> {
+        let mut diffs = vec::Vec::with_capacity(self.num_layers() - 1);
         
         for weight_set in 0..(self.num_layers() - 1) {
             diffs.push(
